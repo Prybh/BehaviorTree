@@ -17,20 +17,6 @@ namespace Prybh
         private BehaviorTreeSettings settings;
         private List<Node> treeNodes = new List<Node>();
 
-        public struct ScriptTemplate 
-        {
-            public TextAsset templateFile;
-            public string defaultFileName;
-            public string subFolder;
-        }
-
-        public ScriptTemplate[] scriptFileAssets = {
-            
-            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateActionNode, defaultFileName="NewActionNode.cs", subFolder="Actions" },
-            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateCompositeNode, defaultFileName="NewCompositeNode.cs", subFolder="Composites" },
-            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateDecoratorNode, defaultFileName="NewDecoratorNode.cs", subFolder="Decorators" },
-        };
-
         public BehaviorTreeView() 
         {
             settings = BehaviorTreeSettings.GetOrCreateSettings();
@@ -176,16 +162,8 @@ namespace Prybh
             return graphViewChange;
         }
 
-        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt) {
-
-            //base.BuildContextualMenu(evt);
-
-            // New script functions
-            evt.menu.AppendAction($"Create Script.../New Action Node", (a) => CreateNewScript(scriptFileAssets[0]));
-            evt.menu.AppendAction($"Create Script.../New Composite Node", (a) => CreateNewScript(scriptFileAssets[1]));
-            evt.menu.AppendAction($"Create Script.../New Decorator Node", (a) => CreateNewScript(scriptFileAssets[2]));
-            evt.menu.AppendSeparator();
-
+        public override void BuildContextualMenu(ContextualMenuPopulateEvent evt) 
+        {
             Vector2 nodePosition = this.ChangeCoordinatesTo(contentViewContainer, evt.localMousePosition);
             {
                 var types = TypeCache.GetTypesDerivedFrom<ActionNode>();
@@ -207,33 +185,6 @@ namespace Prybh
                     evt.menu.AppendAction($"[Decorator]/{type.Name}", (a) => CreateNode(type, nodePosition));
                 }
             }
-        }
-
-        private void SelectFolder(string path) 
-        {
-            // https://forum.unity.com/threads/selecting-a-folder-in-the-project-via-button-in-editor-window.355357/
-            // Check the path has no '/' at the end, if it does remove it,
-            // Obviously in this example it doesn't but it might
-            // if your getting the path some other way.
-
-            if (path[path.Length - 1] == '/')
-                path = path.Substring(0, path.Length - 1);
-
-            // Load object
-            UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath(path, typeof(UnityEngine.Object));
-
-            // Select the object in the project folder
-            Selection.activeObject = obj;
-
-            // Also flash the folder yellow to highlight it
-            EditorGUIUtility.PingObject(obj);
-        }
-
-        private void CreateNewScript(ScriptTemplate template) 
-        {
-            SelectFolder($"{settings.newNodeBasePath}/{template.subFolder}");
-            var templatePath = AssetDatabase.GetAssetPath(template.templateFile);
-            ProjectWindowUtil.CreateScriptAssetFromTemplateFile(templatePath, template.defaultFileName);
         }
 
         private Node CreateNodeOnTree(Type type)

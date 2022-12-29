@@ -8,8 +8,22 @@ using UnityEditor.Callbacks;
 
 namespace Prybh 
 {
-    public class BehaviorTreeEditor : EditorWindow 
+    public class BehaviorTreeEditor : EditorWindow
     {
+        public struct ScriptTemplate
+        {
+            public TextAsset templateFile;
+            public string defaultFileName;
+            public string subFolder;
+        }
+
+        public static ScriptTemplate[] scriptFileAssets = {
+
+            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateActionNode, defaultFileName="NewActionNode.cs", subFolder="Actions" },
+            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateCompositeNode, defaultFileName="NewCompositeNode.cs", subFolder="Composites" },
+            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateDecoratorNode, defaultFileName="NewDecoratorNode.cs", subFolder="Decorators" },
+        };
+
         BehaviorTreeView treeView;
         BehaviorTree tree;
         InspectorView inspectorView;
@@ -90,16 +104,28 @@ namespace Prybh
                 }
             };
 
-            // Toolbar assets menu
-            toolbarMenu = root.Q<ToolbarMenu>();
-            var BehaviorTrees = LoadAssets<BehaviorTree>();
-            BehaviorTrees.ForEach(tree => {
-                toolbarMenu.menu.AppendAction($"{tree.name}", (a) => {
-                    Selection.activeObject = tree;
+            // Toolbar 'Assets' menu
+            {
+                toolbarMenu = root.Q<ToolbarMenu>();
+                var BehaviorTrees = LoadAssets<BehaviorTree>();
+                BehaviorTrees.ForEach(tree =>
+                {
+                    toolbarMenu.menu.AppendAction($"{tree.name}", (a) =>
+                    {
+                        Selection.activeObject = tree;
+                    });
                 });
-            });
-            toolbarMenu.menu.AppendSeparator();
-            toolbarMenu.menu.AppendAction("New Tree...", (a) => CreateNewTree("New BehaviorTree"));
+                toolbarMenu.menu.AppendSeparator();
+
+                toolbarMenu.menu.AppendAction("New Tree...", (a) => CreateNewTree("New BehaviorTree"));
+
+                toolbarMenu.menu.AppendSeparator();
+
+                toolbarMenu = root.Q<ToolbarMenu>();
+                toolbarMenu.menu.AppendAction($"Create Script.../New Action Node", (a) => CreateNewScript(scriptFileAssets[0]));
+                toolbarMenu.menu.AppendAction($"Create Script.../New Composite Node", (a) => CreateNewScript(scriptFileAssets[1]));
+                toolbarMenu.menu.AppendAction($"Create Script.../New Decorator Node", (a) => CreateNewScript(scriptFileAssets[2]));
+            }
 
             // New Tree Dialog
             treeNameField = root.Q<TextField>("TreeName");
@@ -201,6 +227,33 @@ namespace Prybh
             AssetDatabase.SaveAssets();
             Selection.activeObject = tree;
             EditorGUIUtility.PingObject(tree);
+        }
+
+        private void CreateNewScript(ScriptTemplate template)
+        {
+            SelectFolder($"{settings.newNodeBasePath}/{template.subFolder}");
+            var templatePath = AssetDatabase.GetAssetPath(template.templateFile);
+            ProjectWindowUtil.CreateScriptAssetFromTemplateFile(templatePath, template.defaultFileName);
+        }
+
+        private void SelectFolder(string path)
+        {
+            // https://forum.unity.com/threads/selecting-a-folder-in-the-project-via-button-in-editor-window.355357/
+            // Check the path has no '/' at the end, if it does remove it,
+            // Obviously in this example it doesn't but it might
+            // if your getting the path some other way.
+
+            if (path[path.Length - 1] == '/')
+                path = path.Substring(0, path.Length - 1);
+
+            // Load object
+            UnityEngine.Object obj = AssetDatabase.LoadAssetAtPath(path, typeof(UnityEngine.Object));
+
+            // Select the object in the project folder
+            Selection.activeObject = obj;
+
+            // Also flash the folder yellow to highlight it
+            EditorGUIUtility.PingObject(obj);
         }
     }
 }
