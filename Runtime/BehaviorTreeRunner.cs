@@ -18,7 +18,7 @@ namespace Prybh
 
         private Context context;
 
-        private void Start()
+        private void Awake()
         {
             if (tree != null)
             {

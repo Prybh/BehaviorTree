@@ -25,6 +25,8 @@ namespace Prybh
             style.left = node.position.x;
             style.top = node.position.y;
 
+            node.NotifyEditor = UpdateState;
+
             CreateInputPorts();
             CreateOutputPorts();
             SetupClasses();
@@ -128,35 +130,29 @@ namespace Prybh
 
         public void SortChildren() 
         {
-            if (node is CompositeNode composite) 
+            if (node is CompositeNode composite)
             {
                 composite.SortChildren();
             }
         }
 
-        public void UpdateState() 
+        private void UpdateState(Node.State state)
         {
             RemoveFromClassList("running");
             RemoveFromClassList("failure");
             RemoveFromClassList("success");
 
-            if (Application.isPlaying) 
+            switch (state)
             {
-                switch (node.state) 
-                {
-                    case Node.State.Running:
-                        if (node.started) 
-                        {
-                            AddToClassList("running");
-                        }
-                        break;
-                    case Node.State.Failure:
-                        AddToClassList("failure");
-                        break;
-                    case Node.State.Success:
-                        AddToClassList("success");
-                        break;
-                }
+                case Node.State.Running:
+                    AddToClassList("running");
+                    break;
+                case Node.State.Failure:
+                    AddToClassList("failure");
+                    break;
+                case Node.State.Success:
+                    AddToClassList("success");
+                    break;
             }
         }
     }

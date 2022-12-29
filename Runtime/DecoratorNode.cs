@@ -22,8 +22,11 @@ namespace Prybh
 
         public override void Abort()
         {
-            base.Abort();
-            child?.Abort();
+            if (IsStarted())
+            {
+                base.Abort();
+                child?.Abort();
+            }
         }
 
         public override void OnDrawGizmos()

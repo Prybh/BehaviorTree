@@ -1,14 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Plastic.Antlr3.Runtime.Tree;
 using UnityEngine;
-using static PlasticGui.LaunchDiffParameters;
 
 namespace Prybh 
 {
     public abstract class CompositeNode : Node 
     {
-        protected List<Node> children = new List<Node>();
+        [SerializeField] protected List<Node> children = new List<Node>();
 
         public override Node Clone() 
         {
@@ -26,9 +24,12 @@ namespace Prybh
 
         public override void Abort()
         {
-            base.Abort();
-            foreach (Node child in children)
-                child.Abort();
+            if (IsStarted())
+            {
+                base.Abort();
+                foreach (Node child in children)
+                    child.Abort();
+            }
         }
 
         public override void OnDrawGizmos()

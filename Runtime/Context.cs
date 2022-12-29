@@ -20,7 +20,8 @@ namespace Prybh
         public CharacterController characterController;
         // Add other game specific systems here
 
-        public static Context CreateFromGameObject(GameObject gameObject) {
+        public static Context CreateFromGameObject(GameObject gameObject) 
+        {
             // Fetch all commonly used components
             Context context = new Context();
             context.gameObject = gameObject;

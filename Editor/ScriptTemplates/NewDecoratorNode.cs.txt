@@ -3,6 +3,23 @@ using Prybh;
 
 public class #SCRIPTNAME# : DecoratorNode
 {
+    /*
+    public override void Bind(BehaviorTree tree)
+    {
+        base.Bind(tree);
+        // Here : Awake()-like
+    }
+    public override void OnDrawGizmos()
+    {
+    }
+    protected virtual void OnStart() 
+    {
+    }
+    protected virtual void OnStop()
+    {
+    }
+    */
+    
     protected override State OnUpdate() 
     {
         return State.Success;

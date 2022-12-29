@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,21 +8,20 @@ namespace Prybh
     {
         public enum State 
         {
+            None,
             Running,
             Failure,
             Success
         }
 
 #if UNITY_EDITOR
-        [HideInInspector] public string guid;
-        [HideInInspector] public Vector2 position;
-        [TextArea]
-        [SerializeField] private string description;
+        [TextArea, SerializeField] private string description;
 #endif // UNITY_EDITOR
 
         private BehaviorTree tree = null;
-        [HideInInspector] public State state = State.Running;
-        [HideInInspector] public bool started = false;
+        private bool started = false;
+
+        protected bool IsStarted() => started;
 
         public State Update() 
         {
@@ -31,7 +31,11 @@ namespace Prybh
                 started = true;
             }
 
-            state = OnUpdate();
+            State state = OnUpdate();
+
+#if UNITY_EDITOR
+            NotifyEditor?.Invoke(state);
+#endif // UNITY_EDITOR
 
             if (state != State.Running) 
             {
@@ -54,9 +58,15 @@ namespace Prybh
 
         public virtual void Abort()
         {
-            started = false;
-            state = State.Running;
-            OnStop();
+            if (started)
+            {
+                OnStop();
+                started = false;
+
+#if UNITY_EDITOR
+                NotifyEditor?.Invoke(State.None);
+#endif // UNITY_EDITOR
+            }
         }
 
         public virtual void OnDrawGizmos() 
@@ -72,6 +82,12 @@ namespace Prybh
         public Blackboard GetBlackboard() => tree.GetBlackboard();
 
 #if UNITY_EDITOR
+        [HideInInspector] public string guid;
+        [HideInInspector] public Vector2 position;
+        [HideInInspector] public State state = State.Running;
+        
+        [NonSerialized] public Action<State> NotifyEditor;
+
         public virtual List<Node> GetChildren() => null;
 
         public List<Node> GetAllChildren()

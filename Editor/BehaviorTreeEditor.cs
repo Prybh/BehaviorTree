@@ -192,11 +192,6 @@ namespace Prybh
             inspectorView.UpdateSelection(node);
         }
 
-        private void OnInspectorUpdate() 
-        {
-            treeView?.UpdateNodeStates();
-        }
-
         private void CreateNewTree(string assetName) 
         {
             string path = System.IO.Path.Combine(locationPathField.value, $"{assetName}.asset");
