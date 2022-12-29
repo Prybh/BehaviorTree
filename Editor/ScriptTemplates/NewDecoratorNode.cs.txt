@@ -1,0 +1,10 @@
+using UnityEngine;
+using Prybh;
+
+public class #SCRIPTNAME# : DecoratorNode
+{
+    protected override State OnUpdate() 
+    {
+        return State.Success;
+    }
+}

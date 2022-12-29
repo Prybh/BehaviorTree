@@ -1,12 +1,12 @@
 {
-  "name": "com.prybh.XXXXXXX",
+  "name": "com.prybh.behaviortree",
   "version": "0.0.0",
-  "displayName": "XXXXXXX",
-  "description": "XXXXXXX",
+  "displayName": "BehaviorTree",
+  "description": "BehaviorTree",
   "unity": "2021.3",
-  "documentationUrl": "https://github.com/Prybh/XXXXXXX",
-  "changelogUrl": "https://github.com/Prybh/XXXXXXX/CHANGELOG.md",
-  "licensesUrl": "https://github.com/Prybh/XXXXXXX/LICENSE.md",
+  "documentationUrl": "https://github.com/Prybh/BehaviorTree",
+  "changelogUrl": "https://github.com/Prybh/BehaviorTree/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Prybh/BehaviorTree/LICENSE.md",
   "dependencies": {},
   "keywords": [
     "unitypackage"
