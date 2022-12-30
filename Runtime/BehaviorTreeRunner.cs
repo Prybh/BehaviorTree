@@ -10,21 +10,16 @@ namespace Prybh
             Manual
         }
 
-        [SerializeField]
-        private UpdateType updateType;
-
-        [SerializeField]
-        private BehaviorTree tree;
-
-        private Context context;
+        [SerializeField] private BehaviorTree tree;
+        [SerializeField] private UpdateType updateType;
+        [SerializeField] private bool resetOnFinished = true;
 
         private void Awake()
         {
             if (tree != null)
             {
-                context = Context.CreateFromGameObject(gameObject);
                 tree = tree.Clone();
-                tree.Bind(context);
+                tree.Bind(Context.CreateFromGameObject(gameObject));
             }
         }
 
@@ -32,7 +27,7 @@ namespace Prybh
         {
             if (updateType == UpdateType.Auto)
             {
-                Tick();
+                UpdateBehaviorTree();
             }
         }
 
@@ -44,15 +39,35 @@ namespace Prybh
             }
         }
 
-        public void Tick()
+        public void UpdateBehaviorTree()
         {
             if (tree != null)
             {
+                if (resetOnFinished && IsStateFinished())
+                {
+                    ResetState();
+                }
+
                 tree.Update();
             }
         }
 
-        public UpdateType GetUpdateType() => updateType;
         public BehaviorTree GetTree() => tree;
+        public UpdateType GetUpdateType() => updateType;
+        public bool GetResetOnFinished() => resetOnFinished;
+
+        public bool IsStateFinished() => tree.IsStateFinished();
+
+        public void ResetState()
+        {
+            if (tree.IsStateFinished())
+            {
+                tree.ResetState();
+            }
+            else
+            {
+                Debug.LogWarning("Can't reset a BehaviorTree when the state isn't finished");
+            }
+        }
     }
 }

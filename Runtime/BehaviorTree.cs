@@ -8,6 +8,7 @@ namespace Prybh
         [SerializeField] private Node rootNode = null;
         [SerializeField] private Blackboard blackboard = new Blackboard();
 
+        private Node.State treeState = Node.State.None;
         private Context context = null;
 
         public BehaviorTree Clone() 
@@ -35,7 +36,27 @@ namespace Prybh
 
         public Node.State Update()
         {
-            return rootNode.Update();
+            if (treeState == Node.State.None || treeState == Node.State.Running)
+            {
+                treeState = rootNode.Update();
+            }
+            return treeState;
+        }
+
+        public Node.State GetState() => treeState;
+
+        public bool IsStateFinished() => treeState == Node.State.Success || treeState == Node.State.Failure;
+
+        public void ResetState()
+        {
+            if (IsStateFinished())
+            {
+                treeState = Node.State.None;
+            }
+            else
+            {
+                Debug.LogWarning("Can't reset a BehaviorTree when the state isn't finished");
+            }
         }
 
         public Context GetContext() => context;
