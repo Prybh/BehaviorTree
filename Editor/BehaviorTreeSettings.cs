@@ -16,6 +16,27 @@ class BehaviorTreeSettings : ScriptableObject
 
     public string newNodeBasePath = "Assets/";
 
+    private static BehaviorTreeSettings m_settings = null;
+    public static BehaviorTreeSettings settings => m_settings;
+
+    private void OnEnable()
+    {
+        m_settings = this;
+    }
+
+    public static BehaviorTreeSettings FindOrCreateSettings()
+    {
+        if (m_settings == null)
+        {
+            m_settings = FindSettings(); 
+            if (m_settings == null)
+            {
+                m_settings = CreateSettings();
+            }
+        }
+        return m_settings;
+    }
+
     private static BehaviorTreeSettings FindSettings()
     {
         var guids = AssetDatabase.FindAssets("t:BehaviorTreeSettings");
@@ -34,27 +55,24 @@ class BehaviorTreeSettings : ScriptableObject
         }
     }
 
-    internal static BehaviorTreeSettings GetOrCreateSettings() 
+    private static BehaviorTreeSettings CreateSettings()
     {
-        var settings = FindSettings();
-        if (settings == null) 
-        {
-            settings = ScriptableObject.CreateInstance<BehaviorTreeSettings>();
+        var settings = ScriptableObject.CreateInstance<BehaviorTreeSettings>();
 
-            string packageEditorPath = "Packages/com.prybh.BehaviorTree/Editor/";
+        string packageEditorPath = "Packages/com.prybh.BehaviorTree/Editor/";
 
-            settings.BehaviorTreeXml = (VisualTreeAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/BehaviorTreeEditor.uxml", typeof(VisualTreeAsset));
-            settings.BehaviorTreeStyle = (StyleSheet)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/BehaviorTreeEditorStyle.uss", typeof(StyleSheet));
-            settings.NodeXml = (VisualTreeAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/NodeView.uxml", typeof(VisualTreeAsset));
-            settings.NodeStyle = (StyleSheet)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/NodeViewStyle.uss", typeof(StyleSheet));
+        settings.BehaviorTreeXml = (VisualTreeAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/BehaviorTreeEditor.uxml", typeof(VisualTreeAsset));
+        settings.BehaviorTreeStyle = (StyleSheet)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/BehaviorTreeEditorStyle.uss", typeof(StyleSheet));
+        settings.NodeXml = (VisualTreeAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/NodeView.uxml", typeof(VisualTreeAsset));
+        settings.NodeStyle = (StyleSheet)AssetDatabase.LoadAssetAtPath(packageEditorPath + "UIBuilder/NodeViewStyle.uss", typeof(StyleSheet));
 
-            settings.scriptTemplateActionNode = (TextAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "ScriptTemplates/NewActionNode.cs.txt", typeof(TextAsset));
-            settings.scriptTemplateCompositeNode = (TextAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "ScriptTemplates/NewCompositeNode.cs.txt", typeof(TextAsset));
-            settings.scriptTemplateDecoratorNode = (TextAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "ScriptTemplates/NewDecoratorNode.cs.txt", typeof(TextAsset));
+        settings.scriptTemplateActionNode = (TextAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "ScriptTemplates/NewActionNode.cs.txt", typeof(TextAsset));
+        settings.scriptTemplateCompositeNode = (TextAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "ScriptTemplates/NewCompositeNode.cs.txt", typeof(TextAsset));
+        settings.scriptTemplateDecoratorNode = (TextAsset)AssetDatabase.LoadAssetAtPath(packageEditorPath + "ScriptTemplates/NewDecoratorNode.cs.txt", typeof(TextAsset));
 
-            AssetDatabase.CreateAsset(settings, "Assets/BehaviorTreeSettings.asset");
-            AssetDatabase.SaveAssets();
-        }
+        AssetDatabase.CreateAsset(settings, "Assets/BehaviorTreeSettings.asset");
+        AssetDatabase.SaveAssets();
+
         return settings;
     }
 
@@ -69,7 +87,7 @@ class BehaviorTreeSettings : ScriptableObject
             // activateHandler is called when the user clicks on the Settings item in the Settings window.
             activateHandler = (searchContext, rootElement) =>
             {
-                var settings = new SerializedObject(GetOrCreateSettings());
+                var settings = new SerializedObject(BehaviorTreeSettings.settings);
 
                 // rootElement is a VisualElement. If you add any children to it, the OnGUI function
                 // isn't called because the SettingsProvider uses the UIElements drawing framework.

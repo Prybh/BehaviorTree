@@ -5,7 +5,7 @@ namespace Prybh
 {
     public abstract class DecoratorNode : Node 
     {
-        [SerializeField] protected Node child;
+        [HideInInspector, SerializeField] protected Node child;
 
         public override Node Clone()
         {

@@ -19,7 +19,7 @@ namespace Prybh
             if (tree != null)
             {
                 tree = tree.Clone();
-                tree.Bind(Context.CreateFromGameObject(gameObject));
+                tree.Bind(gameObject);
             }
         }
 

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,30 +18,34 @@ namespace Prybh
             public string subFolder;
         }
 
-        public static ScriptTemplate[] scriptFileAssets = {
+        private static ScriptTemplate[] scriptFileAssets = null;
 
-            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateActionNode, defaultFileName="NewActionNode.cs", subFolder="Actions" },
-            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateCompositeNode, defaultFileName="NewCompositeNode.cs", subFolder="Composites" },
-            new ScriptTemplate{ templateFile=BehaviorTreeSettings.GetOrCreateSettings().scriptTemplateDecoratorNode, defaultFileName="NewDecoratorNode.cs", subFolder="Decorators" },
-        };
+        private BehaviorTree tree;
+        private BehaviorTreeView treeView;
+        private InspectorView inspectorView;
+        private IMGUIContainer blackboardView;
+        private ToolbarMenu toolbarMenu;
+        private TextField treeNameField;
+        private TextField locationPathField;
+        private Button createNewTreeButton;
+        private VisualElement overlay;
 
-        BehaviorTreeView treeView;
-        BehaviorTree tree;
-        InspectorView inspectorView;
-        IMGUIContainer blackboardView;
-        ToolbarMenu toolbarMenu;
-        TextField treeNameField;
-        TextField locationPathField;
-        Button createNewTreeButton;
-        VisualElement overlay;
-        BehaviorTreeSettings settings;
+        private SerializedObject treeObject;
 
-        SerializedObject treeObject;
-        SerializedProperty blackboardProperty;
+        private System.Type[] blackboardTypes;
+        private string[] blackboardTypeNames;
 
         [MenuItem("Window/BehaviorTreeEditor")]
         public static void OpenWindow() 
         {
+            var settings = BehaviorTreeSettings.FindOrCreateSettings();
+            scriptFileAssets = new ScriptTemplate[]
+            {
+                new ScriptTemplate{ templateFile=settings.scriptTemplateActionNode, defaultFileName="NewActionNode.cs", subFolder="Actions" },
+                new ScriptTemplate{ templateFile=settings.scriptTemplateCompositeNode, defaultFileName="NewCompositeNode.cs", subFolder="Composites" },
+                new ScriptTemplate{ templateFile=settings.scriptTemplateDecoratorNode, defaultFileName="NewDecoratorNode.cs", subFolder="Decorators" }
+            };
+
             BehaviorTreeEditor wnd = GetWindow<BehaviorTreeEditor>();
             wnd.titleContent = new GUIContent("BehaviorTreeEditor");
             wnd.minSize = new Vector2(800, 600);
@@ -72,7 +77,7 @@ namespace Prybh
 
         public void CreateGUI() 
         {
-            settings = BehaviorTreeSettings.GetOrCreateSettings();
+            var settings = BehaviorTreeSettings.settings;
 
             // Each editor window contains a root VisualElement object
             VisualElement root = rootVisualElement;
@@ -99,7 +104,42 @@ namespace Prybh
                 if (treeObject != null && treeObject.targetObject != null)
                 {
                     treeObject.Update();
-                    EditorGUILayout.PropertyField(blackboardProperty);
+
+                    if (EditorApplication.isPlaying && tree.GetBlackboard<Blackboard>() != null)
+                    {
+                        // TODO : Seems we can't 
+                        //EditorGUILayout.ObjectField(tree.GetBlackboard<Blackboard>(), tree.GetBlackboardType().Type);
+                    }
+                    else
+                    {
+                        SerializableSystemType sType = tree.GetBlackboardType();
+                        System.Type currentBlackboardType = (sType != null) ? sType.Type : null;
+                        if (currentBlackboardType == null)
+                        {
+                            currentBlackboardType = typeof(Blackboard);
+                        }
+
+                        int currentIndex = -1;
+                        for (int i = 0; i < blackboardTypes.Length; i++)
+                        {
+                            if (blackboardTypes[i] == currentBlackboardType)
+                            {
+                                currentIndex = i;
+                                break;
+                            }
+                        }
+
+                        int newIndex = 0;
+                        if (currentIndex >= 0)
+                        {
+                            newIndex = EditorGUILayout.Popup(currentIndex, blackboardTypeNames);
+                        }
+                        if (newIndex != currentIndex)
+                        {
+                            tree.SetBlackboardType(new SerializableSystemType(blackboardTypes[newIndex]));
+                        }
+                    }
+
                     treeObject.ApplyModifiedProperties();
                 }
             };
@@ -148,6 +188,16 @@ namespace Prybh
         {
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+
+            blackboardTypes = System.AppDomain.CurrentDomain.GetAssemblies()
+                // alternative: .GetExportedTypes()
+                .SelectMany(domainAssembly => domainAssembly.GetTypes())
+                .Where(type => typeof(Blackboard).IsAssignableFrom(type)
+                // alternative: => type.IsSubclassOf(typeof(B))
+                // alternative: && type != typeof(B)
+                // alternative: && ! type.IsAbstract
+                ).ToArray(); 
+            blackboardTypeNames = blackboardTypes.Select(b => b.Name).ToArray();
         }
 
         private void OnDisable() 
@@ -206,7 +256,6 @@ namespace Prybh
             treeView.PopulateView(tree);
 
             treeObject = new SerializedObject(tree);
-            blackboardProperty = treeObject.FindProperty("blackboard");
 
             EditorApplication.delayCall += () => {
                 treeView.FrameAll();
@@ -231,7 +280,7 @@ namespace Prybh
 
         private void CreateNewScript(ScriptTemplate template)
         {
-            SelectFolder($"{settings.newNodeBasePath}/{template.subFolder}");
+            SelectFolder($"{BehaviorTreeSettings.settings.newNodeBasePath}/{template.subFolder}");
             var templatePath = AssetDatabase.GetAssetPath(template.templateFile);
             ProjectWindowUtil.CreateScriptAssetFromTemplateFile(templatePath, template.defaultFileName);
         }

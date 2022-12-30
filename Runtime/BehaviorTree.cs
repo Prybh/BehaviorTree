@@ -5,11 +5,17 @@ namespace Prybh
     [CreateAssetMenu()]
     public class BehaviorTree : ScriptableObject
     {
-        [SerializeField] private Node rootNode = null;
-        [SerializeField] private Blackboard blackboard = new Blackboard();
+        [HideInInspector, SerializeField] private Node rootNode = null;
+        [HideInInspector, SerializeField] private SerializableSystemType blackboardType = null;
 
         private Node.State treeState = Node.State.None;
-        private Context context = null;
+        private GameObject m_gameObject = null;
+        private Blackboard blackboard = null;
+
+        public GameObject gameObject => m_gameObject;
+        public Transform transform => m_gameObject.transform;
+        public T GetComponent<T>() => m_gameObject.GetComponent<T>();
+        public T GetBlackboard<T>() where T : Blackboard => blackboard as T;
 
         public BehaviorTree Clone() 
         {
@@ -18,9 +24,10 @@ namespace Prybh
             return tree;
         }
 
-        public void Bind(Context context) 
+        public void Bind(GameObject gameObject) 
         {
-            this.context = context;
+            m_gameObject = gameObject;
+            blackboard = (Blackboard)System.Activator.CreateInstance(blackboardType.Type);
             rootNode.Bind(this);
         }
 
@@ -59,14 +66,20 @@ namespace Prybh
             }
         }
 
-        public Context GetContext() => context;
-        public Blackboard GetBlackboard() => blackboard;
-
 #if UNITY_EDITOR
+        // TODO : Expose in window custom inspector
+        //[TextArea, SerializeField] private string description;
+
         public Node GetRootNode() => rootNode;
         public void SetRootNode(RootNode node)
         {
             rootNode = node;
+        }
+
+        public SerializableSystemType GetBlackboardType() => blackboardType;
+        public void SetBlackboardType(SerializableSystemType type)
+        {
+            blackboardType = type;
         }
 #endif // UNITY_EDITOR
     }

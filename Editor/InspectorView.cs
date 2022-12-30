@@ -7,7 +7,7 @@ namespace Prybh
     {
         public new class UxmlFactory : UxmlFactory<InspectorView, VisualElement.UxmlTraits> {}
 
-        private Editor editor;
+        private Editor editor = null;
 
         internal void UpdateSelection(NodeView nodeView) 
         {

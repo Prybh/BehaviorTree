@@ -77,9 +77,11 @@ namespace Prybh
         protected virtual void OnStop() {}
         protected abstract State OnUpdate();
 
-        public BehaviorTree GetTree() => tree;
-        public Context GetContext() => tree.GetContext();
-        public Blackboard GetBlackboard() => tree.GetBlackboard();
+        public BehaviorTree GetTree() => tree; 
+        public GameObject gameObject => tree.gameObject;
+        public Transform transform => tree.transform;
+        public T GetComponent<T>() => tree.GetComponent<T>();
+        public T GetBlackboard<T>() where T : Blackboard => tree.GetBlackboard<T>();
 
 #if UNITY_EDITOR
         [HideInInspector] public string guid;

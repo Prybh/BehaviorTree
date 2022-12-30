@@ -6,7 +6,7 @@ namespace Prybh
 {
     public abstract class CompositeNode : Node 
     {
-        [SerializeField] protected List<Node> children = new List<Node>();
+        [HideInInspector, SerializeField] protected List<Node> children = new List<Node>();
 
         public override Node Clone() 
         {

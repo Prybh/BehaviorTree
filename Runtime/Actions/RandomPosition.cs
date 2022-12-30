@@ -9,7 +9,7 @@ namespace Prybh
 
         protected override State OnUpdate()
         {
-            GetBlackboard().moveToPosition = new Vector3(Random.Range(min.x, max.x), 0.0f, Random.Range(min.y, max.y));
+            GetBlackboard<SimpleVectorBlackboard>().moveToPosition = new Vector3(Random.Range(min.x, max.x), 0.0f, Random.Range(min.y, max.y));
             return State.Success;
         }
 

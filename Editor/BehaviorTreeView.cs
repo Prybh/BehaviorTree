@@ -14,13 +14,10 @@ namespace Prybh
         public new class UxmlFactory : UxmlFactory<BehaviorTreeView, GraphView.UxmlTraits> {}
 
         private BehaviorTree tree;
-        private BehaviorTreeSettings settings;
         private List<Node> treeNodes = new List<Node>();
 
         public BehaviorTreeView() 
         {
-            settings = BehaviorTreeSettings.GetOrCreateSettings();
-
             Insert(0, new GridBackground());
 
             this.AddManipulator(new ContentZoomer());
@@ -29,7 +26,7 @@ namespace Prybh
             this.AddManipulator(new SelectionDragger());
             this.AddManipulator(new RectangleSelector());
 
-            styleSheets.Add(settings.BehaviorTreeStyle);
+            styleSheets.Add(BehaviorTreeSettings.settings.BehaviorTreeStyle);
 
             Undo.undoRedoPerformed += OnUndoRedo;
         }
@@ -221,7 +218,7 @@ namespace Prybh
             Undo.RecordObject(tree, "Behaviour Tree (DeleteNode)");
             treeNodes.Remove(node);
 
-            //AssetDatabase.RemoveObjectFromAsset(node);
+            AssetDatabase.RemoveObjectFromAsset(node);
             Undo.DestroyObjectImmediate(node);
 
             AssetDatabase.SaveAssets();

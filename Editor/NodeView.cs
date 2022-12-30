@@ -15,7 +15,7 @@ namespace Prybh
         public Port output;
 
         public NodeView(Node node) 
-            : base(AssetDatabase.GetAssetPath(BehaviorTreeSettings.GetOrCreateSettings().NodeXml)) 
+            : base(AssetDatabase.GetAssetPath(BehaviorTreeSettings.settings.NodeXml)) 
         {
             this.node = node;
             this.node.name = node.GetType().Name;
